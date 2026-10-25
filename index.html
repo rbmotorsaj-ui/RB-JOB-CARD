@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RB Motors - Job Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#2B3A4C;
+    --ink-soft:#5B6B7A;
+    --paper:#F4F9FE;
+    --paper-dark:#E1EDF8;
+    --charcoal:#CFE2F3;
+    --charcoal-2:#2B2823;
+    --amber:#3E7CB1;
+    --amber-dark:#1F4E79;
+    --rust:#B4502E;
+    --rust-bg:#F3DCCF;
+    --olive:#5C7A52;
+    --olive-bg:#DDE6D2;
+    --slate:#4B6A85;
+    --slate-bg:#D9E3EC;
+    --line:#A9C4DD;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background-color:var(--charcoal);background-image:repeating-linear-gradient(45deg,rgba(31,78,121,.09) 0,rgba(31,78,121,.09) 10px,transparent 10px,transparent 20px);font-family:'Inter',sans-serif;color:var(--ink);padding:32px 16px;}
+  .wrap{max-width:720px;margin:0 auto;}
+
+  .toprow{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;padding:0 4px;}
+  .brand{font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.04em;color:var(--amber-dark);font-size:24px;text-transform:uppercase;}
+  .brand .tag{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:16px;letter-spacing:.03em;color:var(--amber);text-transform:none;margin-top:3px;}
+  .newbtn{font-family:'IBM Plex Mono',monospace;font-size:16px;background:none;border:1px solid var(--amber-dark);color:var(--amber-dark);padding:7px 12px;border-radius:3px;cursor:pointer;}
+  .newbtn:hover{background:#BFD6EC;}
+
+  .ticket{
+    background:var(--paper);
+    border-radius:6px;
+    position:relative;
+    box-shadow:0 14px 34px rgba(31,78,121,.22);
+    overflow:hidden;
+  }
+  .perf{
+    height:14px;
+    background-image:radial-gradient(circle, var(--charcoal) 3.5px, transparent 3.6px);
+    background-size:18px 14px;
+    background-position:center;
+    background-color:var(--paper);
+  }
+  .head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:22px 28px 14px 28px;
+    border-bottom:2px dashed var(--line);
+  }
+  .head h1{
+    font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;margin:0 0 4px 0;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--ink);
+  }
+  .head .sub{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--ink-soft);}
+  .numbox{
+    font-family:'IBM Plex Mono',monospace;text-align:right;
+  }
+  .numbox .lbl{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);display:block;margin-bottom:3px;}
+  .numbox .val{font-size:23px;font-weight:600;color:var(--amber-dark);}
+
+  .body-area{padding:22px 28px 26px 28px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;}
+  .field.full{grid-column:1 / -1;}
+  .field label{
+    font-family:'IBM Plex Mono',monospace;font-size:14.5px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-soft);margin-bottom:5px;
+  }
+  input, textarea, select{
+    font-family:'Inter',sans-serif;font-size:15px;color:var(--ink);
+    background:#FFFFFF;border:1px solid var(--line);border-radius:4px;
+    padding:9px 10px;width:100%;
+  }
+  input:focus, textarea:focus, select:focus{outline:none;border-color:var(--amber-dark);box-shadow:0 0 0 2px rgba(31,78,121,.25);}
+  ::placeholder{color:#6E88A0;opacity:1;}
+  textarea{resize:vertical;min-height:56px;font-family:'Inter',sans-serif;line-height:1.45;}
+
+  .statusrow{display:flex;align-items:center;gap:12px;margin-top:4px;}
+  .stamp{
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.06em;
+    padding:6px 14px;border-radius:3px;border:2px solid; transform:rotate(-2deg); display:inline-block;
+  }
+  .st-received{color:var(--slate);border-color:var(--slate);background:var(--slate-bg);}
+  .st-progress{color:var(--amber-dark);border-color:var(--amber-dark);background:#CFE0F0;}
+  .st-parts{color:var(--rust);border-color:var(--rust);background:var(--rust-bg);}
+  .st-ready{color:var(--olive);border-color:var(--olive);background:var(--olive-bg);}
+  .st-delivered{color:var(--ink-soft);border-color:var(--ink-soft);background:#E3EBF3;}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  button.primary{
+    font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
+    background:var(--amber-dark);color:#EAF3FB;border:none;padding:10px 18px;border-radius:4px;cursor:pointer;
+  }
+  button.primary:hover{background:#163A5C;}
+  .err{font-size:16px;color:var(--rust);margin-top:4px;display:none;}
+  .storage-banner{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--amber-dark);background:#DCEAF6;border:1px solid var(--amber-dark);padding:8px 12px;border-radius:4px;display:none;}
+
+  .list{margin-top:26px;}
+  .list h2{font-family:'Oswald',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber-dark);margin:0 0 10px 4px;font-weight:600;}
+  .searchrow{display:flex;gap:8px;margin-bottom:12px;}
+  .searchrow input{flex:1;background:#FFFFFF;border:1px solid var(--line);}
+  .searchrow select{width:170px;background:#FFFFFF;border:1px solid var(--line);flex-shrink:0;}
+  .exportbtn{font-family:'IBM Plex Mono',monospace;font-size:16px;background:var(--olive);color:#fff;border:none;padding:9px 14px;border-radius:3px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+  .exportbtn:hover{background:#4a6440;}
+  .exportbtn:disabled{opacity:.5;cursor:not-allowed;}
+  .row{
+    background:var(--paper);border-radius:5px;padding:12px 16px;margin-bottom:8px;
+    display:flex;align-items:center;gap:14px;cursor:pointer;
+  }
+  .row:hover{background:var(--paper-dark);}
+  .row .rnum{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:17px;color:var(--amber-dark);width:118px;flex-shrink:0;}
+  .row .rmain{flex:1;min-width:0;}
+  .row .rveh{font-size:17.5px;font-weight:500;color:var(--ink);}
+  .row .rcust{font-size:16px;color:var(--ink-soft);}
+  .row .rdate{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink-soft);width:78px;flex-shrink:0;}
+  .empty{font-family:'IBM Plex Mono',monospace;font-size:16.5px;color:#4F6A83;padding:10px 4px;}
+
+  .checklist-title{
+    font-family:'IBM Plex Mono',monospace;font-size:14.5px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-soft);margin:4px 0 8px 0;
+  }
+  .checklist{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;
+  }
+  .cl-item{
+    display:flex;align-items:center;gap:9px;
+    border:1px solid var(--line);border-radius:6px;
+    padding:11px 12px;background:#FFFFFF;cursor:pointer;
+    font-size:17px;color:var(--slate);
+  }
+  .cl-item:hover{border-color:var(--amber-dark);}
+  .cl-item input{width:15px;height:15px;flex-shrink:0;accent-color:var(--amber-dark);cursor:pointer;}
+  .cl-item.checked{background:#DCEAF6;border-color:var(--amber-dark);color:var(--ink);}
+  .cl-item span{line-height:1.3;}
+  .dchecklist{display:flex;flex-wrap:wrap;gap:6px;}
+  .dchip{
+    font-family:'IBM Plex Mono',monospace;font-size:15.5px;background:#DCEAF6;color:var(--amber-dark);
+    border:1px solid var(--amber-dark);padding:4px 9px;border-radius:12px;
+  }
+
+  .hidden{display:none !important;}
+  .backbtn{font-family:'IBM Plex Mono',monospace;font-size:16px;background:none;border:1px solid var(--amber-dark);color:var(--amber-dark);padding:7px 12px;border-radius:3px;cursor:pointer;margin-bottom:14px;}
+  .backbtn:hover{background:#BFD6EC;}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-bottom:6px;}
+  .ditem{padding:12px 0;border-bottom:1px solid var(--line);}
+  .ditem.full{grid-column:1 / -1;}
+  .ditem .dlbl{font-family:'IBM Plex Mono',monospace;font-size:14.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);margin-bottom:5px;display:block;}
+  .ditem .dval{font-size:18.5px;color:var(--ink);line-height:1.5;white-space:pre-wrap;}
+  .ditem .dval.empty-val{color:#6E8499;font-style:italic;}
+  .dactions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  button.secondary{
+    font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
+    background:none;color:var(--amber-dark);border:1px solid var(--amber-dark);padding:10px 18px;border-radius:4px;cursor:pointer;
+  }
+  button.secondary:hover{background:#CFE0F0;}
+  button.danger{
+    font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
+    background:none;color:var(--rust);border:1px solid var(--rust);padding:10px 18px;border-radius:4px;cursor:pointer;
+  }
+  button.danger:hover{background:var(--rust-bg);}
+  .confirm-row{
+    margin-top:14px;padding:12px 14px;background:var(--rust-bg);border:1px solid var(--rust);border-radius:5px;
+    display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:16.5px;color:var(--rust);
+  }
+  .confirm-row button{padding:6px 12px;font-size:16px;}
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .toprow, #page-form, #backBtn, .dactions, .confirm-row{display:none !important;}
+    .wrap{max-width:100%;}
+    .ticket{box-shadow:none;border-radius:0;}
+    .perf{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="toprow">
+    <span class="brand">RB Motors<span class="tag">Multi brand car care</span></span>
+    <button class="newbtn" id="newBtn" type="button">+ New job card</button>
+  </div>
+
+  <div id="page-form">
+  <div class="ticket" id="ticket">
+    <div class="perf"></div>
+    <div class="head">
+      <div>
+        <h1>Job card</h1>
+        <div class="sub">RB Motors &mdash; Multi brand car care</div>
+      </div>
+      <div class="numbox">
+        <span class="lbl">Card no.</span>
+        <span class="val" id="jobNumDisplay">—</span>
+      </div>
+    </div>
+
+    <div class="body-area">
+      <div class="grid2">
+        <div class="field">
+          <label for="date">Date</label>
+          <input type="date" id="date">
+        </div>
+        <div class="field">
+          <label for="mechanic">Assigned mechanic</label>
+          <input type="text" id="mechanic" placeholder="Name of mechanic">
+        </div>
+        <div class="field">
+          <label for="customer">Customer</label>
+          <input type="text" id="customer" placeholder="Customer name and contact">
+        </div>
+        <div class="field">
+          <label for="vehicle">Vehicle</label>
+          <input type="text" id="vehicle" placeholder="Make, model, registration no.">
+        </div>
+        <div class="field full">
+          <label for="complaint">Complaint</label>
+          <textarea id="complaint" placeholder="Reported by customer"></textarea>
+        </div>
+        <div class="field full">
+          <label for="inspection">Inspection notes</label>
+          <textarea id="inspection" placeholder="Findings from inspection"></textarea>
+        </div>
+        <div class="field full">
+          <label for="recommended">Recommended repairs</label>
+          <textarea id="recommended" placeholder="Repairs recommended to customer"></textarea>
+        </div>
+        <div class="field">
+          <label for="delivery">Estimated delivery</label>
+          <input type="date" id="delivery">
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option value="received">Received</option>
+            <option value="progress">In progress</option>
+            <option value="parts">Awaiting parts</option>
+            <option value="ready">Ready for delivery</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="checklist-title">Service checklist</div>
+      <div class="checklist" id="checklistArea"></div>
+
+      <div class="statusrow">
+        <span class="stamp" id="stampBadge">Received</span>
+      </div>
+      <div class="err" id="errMsg">Enter customer, vehicle and complaint before saving.</div>
+      <div class="err" id="saveErrMsg">Couldn't save the job card. Check your connection and try again.</div>
+
+      <div class="actions">
+        <button class="primary" id="saveBtn" type="button">Save job card</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="list">
+    <h2 id="listTitle">Saved job cards</h2>
+    <div class="searchrow">
+      <input type="text" id="searchInput" placeholder="Search by customer, vehicle or card no.">
+      <select id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="received">Received</option>
+        <option value="progress">In progress</option>
+        <option value="parts">Awaiting parts</option>
+        <option value="ready">Ready for delivery</option>
+        <option value="delivered">Delivered</option>
+      </select>
+      <button class="exportbtn" id="exportBtn" type="button">Export to Excel</button>
+    </div>
+    <div id="listArea"><div class="empty">Loading...</div></div>
+  </div>
+  </div>
+
+  <div id="page-detail" class="hidden">
+    <button class="backbtn" id="backBtn" type="button">&larr; Back to register</button>
+    <div class="ticket">
+      <div class="perf"></div>
+      <div class="head">
+        <div>
+          <h1>Job card detail</h1>
+          <div class="sub">RB Motors &mdash; Multi brand car care</div>
+        </div>
+        <div class="numbox">
+          <span class="lbl">Card no.</span>
+          <span class="val" id="dNum">—</span>
+        </div>
+      </div>
+      <div class="body-area">
+        <div class="dgrid">
+          <div class="ditem"><span class="dlbl">Vehicle</span><span class="dval" id="dVehicle"></span></div>
+          <div class="ditem"><span class="dlbl">Customer</span><span class="dval" id="dCustomer"></span></div>
+          <div class="ditem full"><span class="dlbl">Complaint</span><span class="dval" id="dComplaint"></span></div>
+          <div class="ditem full"><span class="dlbl">Inspection notes</span><span class="dval" id="dInspection"></span></div>
+          <div class="ditem full"><span class="dlbl">Recommended repairs</span><span class="dval" id="dRecommended"></span></div>
+          <div class="ditem"><span class="dlbl">Assigned mechanic</span><span class="dval" id="dMechanic"></span></div>
+          <div class="ditem"><span class="dlbl">Estimated delivery</span><span class="dval" id="dDelivery"></span></div>
+          <div class="ditem full"><span class="dlbl">Service checklist</span><div class="dchecklist" id="dChecklist"></div></div>
+        </div>
+        <div class="statusrow">
+          <span class="stamp" id="dStampBadge">Received</span>
+        </div>
+        <div class="dactions">
+          <button class="danger" id="deleteBtn" type="button">Delete job card</button>
+          <button class="secondary" id="printBtn" type="button">Print job card</button>
+          <button class="secondary" id="editBtn" type="button">Edit this job card</button>
+        </div>
+        <div class="confirm-row hidden" id="confirmRow">
+          <span>Delete this job card permanently?</span>
+          <button class="danger" id="confirmDeleteBtn" type="button">Yes, delete</button>
+          <button class="secondary" id="cancelDeleteBtn" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const statusLabels = {received:'Received', progress:'In progress', parts:'Awaiting parts', ready:'Ready for delivery', delivered:'Delivered'};
+const statusClass = {received:'st-received', progress:'st-progress', parts:'st-parts', ready:'st-ready', delivered:'st-delivered'};
+const checklistItems = [
+  'Engine Oil','Oil Filter','Air Filter',
+  'AC Service','Brake Service','Suspension',
+  'Wheel Alignment','Wheel Balancing','Battery Check',
+  'Coolant','Engine Diagnostics','General Inspection',
+  'Foam Wash','Interior Cleaning','Other Services'
+];
+
+let currentId = null;
+let currentLabel = null;
+let allCards = [];
+let lastFiltered = [];
+let pendingNumber = null;
+let pendingLabel = null;
+let storageMode = 'claude'; // 'claude' | 'local' | 'memory'
+const memoryStore = {};
+const LS_PREFIX = 'rbmotors_';
+
+function localStorageWorks(){
+  try{
+    const k = '__test__' + Date.now();
+    window.localStorage.setItem(k, '1');
+    window.localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+
+function setBanner(mode){
+  // Storage-mode notice intentionally not shown in the UI.
+}
+
+function delay(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+async function dbSet(key, value){
+  if(storageMode === 'claude'){
+    for(let attempt = 0; attempt < 3; attempt++){
+      try{
+        if(!window.storage) throw new Error('no storage api');
+        const r = await window.storage.set(key, value, false);
+        if(!r) throw new Error('empty result');
+        return true;
+      }catch(e){
+        if(attempt < 2) await delay(300 * (attempt + 1));
+      }
+    }
+    storageMode = localStorageWorks() ? 'local' : 'memory';
+    setBanner(storageMode);
+  }
+  if(storageMode === 'local'){
+    try{
+      window.localStorage.setItem(LS_PREFIX + key, value);
+      return true;
+    }catch(e){
+      storageMode = 'memory';
+      setBanner('memory');
+    }
+  }
+  memoryStore[key] = value;
+  return true;
+}
+
+async function dbGet(key){
+  if(storageMode === 'claude'){
+    try{
+      if(!window.storage) throw new Error('no storage api');
+      const r = await window.storage.get(key, false);
+      return r || null;
+    }catch(e){ /* fall through below */ }
+  }
+  if(storageMode === 'local' || storageMode === 'claude'){
+    try{
+      const v = window.localStorage.getItem(LS_PREFIX + key);
+      if(v !== null) return { value: v };
+    }catch(e){}
+  }
+  if(Object.prototype.hasOwnProperty.call(memoryStore, key)) return { value: memoryStore[key] };
+  return null;
+}
+
+async function dbDelete(key){
+  delete memoryStore[key];
+  try{ window.localStorage.removeItem(LS_PREFIX + key); }catch(e){}
+  try{
+    if(!window.storage) throw new Error('no storage api');
+    await window.storage.delete(key, false);
+  }catch(e){}
+  return true;
+}
+
+async function dbListKeys(prefix){
+  const keys = new Set();
+  if(storageMode === 'claude'){
+    try{
+      if(!window.storage) throw new Error('no storage api');
+      const r = await window.storage.list(prefix, false);
+      (r && r.keys ? r.keys : []).forEach(k => keys.add(k));
+    }catch(e){}
+  }
+  try{
+    for(let i = 0; i < window.localStorage.length; i++){
+      const raw = window.localStorage.key(i);
+      if(raw && raw.startsWith(LS_PREFIX + prefix)) keys.add(raw.slice(LS_PREFIX.length));
+    }
+  }catch(e){}
+  Object.keys(memoryStore).filter(k => k.startsWith(prefix)).forEach(k => keys.add(k));
+  return Array.from(keys);
+}
+
+const els = {
+  date: document.getElementById('date'),
+  mechanic: document.getElementById('mechanic'),
+  customer: document.getElementById('customer'),
+  vehicle: document.getElementById('vehicle'),
+  complaint: document.getElementById('complaint'),
+  inspection: document.getElementById('inspection'),
+  recommended: document.getElementById('recommended'),
+  delivery: document.getElementById('delivery'),
+  status: document.getElementById('status'),
+  jobNumDisplay: document.getElementById('jobNumDisplay'),
+  stampBadge: document.getElementById('stampBadge'),
+  errMsg: document.getElementById('errMsg'),
+  saveErrMsg: document.getElementById('saveErrMsg'),
+  listArea: document.getElementById('listArea'),
+  searchInput: document.getElementById('searchInput'),
+  statusFilter: document.getElementById('statusFilter'),
+  exportBtn: document.getElementById('exportBtn'),
+  checklistArea: document.getElementById('checklistArea'),
+};
+
+const pageForm = document.getElementById('page-form');
+const pageDetail = document.getElementById('page-detail');
+const dEls = {
+  num: document.getElementById('dNum'),
+  vehicle: document.getElementById('dVehicle'),
+  customer: document.getElementById('dCustomer'),
+  complaint: document.getElementById('dComplaint'),
+  inspection: document.getElementById('dInspection'),
+  recommended: document.getElementById('dRecommended'),
+  mechanic: document.getElementById('dMechanic'),
+  delivery: document.getElementById('dDelivery'),
+  stamp: document.getElementById('dStampBadge'),
+  checklist: document.getElementById('dChecklist'),
+};
+let detailCard = null;
+
+function buildChecklist(){
+  els.checklistArea.innerHTML = '';
+  checklistItems.forEach((item, i) => {
+    const id = 'cl_' + i;
+    const label = document.createElement('label');
+    label.className = 'cl-item';
+    label.setAttribute('for', id);
+    label.innerHTML = '<input type="checkbox" id="' + id + '" data-item="' + item.replace(/"/g,'&quot;') + '"><span>' + item + '</span>';
+    const cb = label.querySelector('input');
+    cb.addEventListener('change', () => label.classList.toggle('checked', cb.checked));
+    els.checklistArea.appendChild(label);
+  });
+}
+
+function getChecklistValues(){
+  return Array.from(els.checklistArea.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.dataset.item);
+}
+
+function setChecklistValues(values){
+  const set = new Set(values || []);
+  els.checklistArea.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = set.has(cb.dataset.item);
+    cb.closest('.cl-item').classList.toggle('checked', cb.checked);
+  });
+}
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function updateStamp(){
+  const v = els.status.value;
+  els.stampBadge.textContent = statusLabels[v];
+  els.stampBadge.className = 'stamp ' + statusClass[v];
+}
+els.status.addEventListener('change', updateStamp);
+
+function resetForm(newNumber){
+  currentId = null;
+  currentLabel = newNumber;
+  els.date.value = todayStr();
+  els.mechanic.value = '';
+  els.customer.value = '';
+  els.vehicle.value = '';
+  els.complaint.value = '';
+  els.inspection.value = '';
+  els.recommended.value = '';
+  els.delivery.value = '';
+  els.status.value = 'received';
+  els.jobNumDisplay.textContent = newNumber;
+  els.errMsg.style.display = 'none';
+  els.saveErrMsg.style.display = 'none';
+  setChecklistValues([]);
+  updateStamp();
+}
+
+async function getCounter(){
+  const r = await dbGet('job-card-counter');
+  return r ? parseInt(r.value, 10) : 0;
+}
+
+async function nextJobNumber(){
+  const n = (await getCounter()) + 1;
+  const yr = new Date().getFullYear();
+  return { number: n, label: 'JC-' + yr + '-' + String(n).padStart(4,'0') };
+}
+
+let preparingNewCard = false;
+async function prepareNewCard(){
+  if(preparingNewCard) return;
+  preparingNewCard = true;
+  try{
+    const nn = await nextJobNumber();
+    pendingNumber = nn.number;
+    pendingLabel = nn.label;
+    resetForm(nn.label);
+  } finally {
+    preparingNewCard = false;
+  }
+}
+
+async function loadAllCards(){
+  try{
+    const keys = await dbListKeys('job-card:');
+    if(!keys || keys.length === 0) return [];
+    const cards = [];
+    for(const k of keys){
+      try{
+        const r = await dbGet(k);
+        if(r) cards.push(JSON.parse(r.value));
+      }catch(e){}
+    }
+    cards.sort((a,b) => (b.number||0) - (a.number||0));
+    return cards;
+  }catch(e){ return []; }
+}
+
+function renderList(cards){
+  if(cards.length === 0){
+    const msg = allCards.length === 0 ? 'No job cards saved yet.' : 'No job cards match your search.';
+    els.listArea.innerHTML = '<div class="empty">' + msg + '</div>';
+    return;
+  }
+  els.listArea.innerHTML = '';
+  cards.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML =
+      '<span class="rnum">' + c.label + '</span>' +
+      '<div class="rmain"><div class="rveh">' + escapeHtml(c.vehicle || '(no vehicle)') + '</div>' +
+      '<div class="rcust">' + escapeHtml(c.customer || '(no customer)') + '</div></div>' +
+      '<span class="stamp ' + statusClass[c.status] + '" style="transform:none;padding:4px 10px;font-size:14.5px;">' + statusLabels[c.status] + '</span>' +
+      '<span class="rdate">' + (c.date || '') + '</span>';
+    row.addEventListener('click', () => showDetail(c));
+    els.listArea.appendChild(row);
+  });
+}
+
+function applyFilters(){
+  const q = els.searchInput.value.trim().toLowerCase();
+  const st = els.statusFilter.value;
+  const filtered = allCards.filter(c => {
+    if(st && c.status !== st) return false;
+    if(!q) return true;
+    return (c.customer||'').toLowerCase().includes(q)
+      || (c.vehicle||'').toLowerCase().includes(q)
+      || (c.label||'').toLowerCase().includes(q);
+  });
+  lastFiltered = filtered;
+  renderList(filtered);
+}
+
+els.searchInput.addEventListener('input', applyFilters);
+els.statusFilter.addEventListener('change', applyFilters);
+
+function exportToExcel(){
+  const cards = lastFiltered.length || allCards.length ? lastFiltered : allCards;
+  if(!cards || cards.length === 0){
+    els.exportBtn.textContent = 'Nothing to export';
+    setTimeout(() => { els.exportBtn.textContent = 'Export to Excel'; }, 1800);
+    return;
+  }
+  if(typeof XLSX === 'undefined'){
+    els.exportBtn.textContent = 'Excel export unavailable';
+    setTimeout(() => { els.exportBtn.textContent = 'Export to Excel'; }, 2200);
+    return;
+  }
+
+  const rows = cards.map(c => ({
+    'Job Card No.': c.label,
+    'Date': c.date || '',
+    'Customer': c.customer || '',
+    'Vehicle': c.vehicle || '',
+    'Complaint': c.complaint || '',
+    'Inspection Notes': c.inspection || '',
+    'Recommended Repairs': c.recommended || '',
+    'Service Checklist': (c.checklist || []).join(', '),
+    'Assigned Mechanic': c.mechanic || '',
+    'Estimated Delivery': c.delivery || '',
+    'Status': statusLabels[c.status] || c.status || '',
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    {wch:16},{wch:12},{wch:20},{wch:20},{wch:30},{wch:30},{wch:30},{wch:30},{wch:18},{wch:16},{wch:16}
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Job Cards');
+
+  const stamp = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, 'RB_Motors_Job_Cards_' + stamp + '.xlsx');
+}
+
+els.exportBtn.addEventListener('click', exportToExcel);
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function fillVal(el, v){
+  if(v && String(v).trim()){
+    el.textContent = v;
+    el.classList.remove('empty-val');
+  } else {
+    el.textContent = 'Not recorded';
+    el.classList.add('empty-val');
+  }
+}
+
+function showDetail(c){
+  detailCard = c;
+  dEls.num.textContent = c.label;
+  fillVal(dEls.vehicle, c.vehicle);
+  fillVal(dEls.customer, c.customer);
+  fillVal(dEls.complaint, c.complaint);
+  fillVal(dEls.inspection, c.inspection);
+  fillVal(dEls.recommended, c.recommended);
+  fillVal(dEls.mechanic, c.mechanic);
+  fillVal(dEls.delivery, c.delivery);
+  dEls.stamp.textContent = statusLabels[c.status];
+  dEls.stamp.className = 'stamp ' + statusClass[c.status];
+  if(c.checklist && c.checklist.length){
+    dEls.checklist.innerHTML = c.checklist.map(i => '<span class="dchip">' + i.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) + '</span>').join('');
+  } else {
+    dEls.checklist.innerHTML = '<span class="dval empty-val">Not recorded</span>';
+  }
+  document.getElementById('confirmRow').classList.add('hidden');
+  document.getElementById('deleteBtn').classList.remove('hidden');
+  document.getElementById('editBtn').classList.remove('hidden');
+  pageForm.classList.add('hidden');
+  pageDetail.classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function showFormPage(){
+  pageDetail.classList.add('hidden');
+  pageForm.classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('backBtn').addEventListener('click', showFormPage);
+document.getElementById('printBtn').addEventListener('click', () => {
+  window.print();
+});
+document.getElementById('editBtn').addEventListener('click', () => {
+  if(detailCard){
+    loadCard(detailCard);
+    showFormPage();
+  }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  document.getElementById('confirmRow').classList.remove('hidden');
+  document.getElementById('deleteBtn').classList.add('hidden');
+  document.getElementById('editBtn').classList.add('hidden');
+});
+
+document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+  document.getElementById('confirmRow').classList.add('hidden');
+  document.getElementById('deleteBtn').classList.remove('hidden');
+  document.getElementById('editBtn').classList.remove('hidden');
+});
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  if(!detailCard) return;
+  const confirmBtn = document.getElementById('confirmDeleteBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Deleting...';
+  try{
+    await dbDelete('job-card:' + detailCard.id);
+    allCards = await loadAllCards();
+    applyFilters();
+    if(currentId === detailCard.id){
+      await prepareNewCard();
+    }
+    detailCard = null;
+    showFormPage();
+  }catch(e){
+    console.error('Delete failed', e);
+  }finally{
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Yes, delete';
+  }
+});
+
+function loadCard(c){
+  currentId = c.id;
+  currentLabel = c.label;
+  els.jobNumDisplay.textContent = c.label;
+  els.date.value = c.date || '';
+  els.mechanic.value = c.mechanic || '';
+  els.customer.value = c.customer || '';
+  els.vehicle.value = c.vehicle || '';
+  els.complaint.value = c.complaint || '';
+  els.inspection.value = c.inspection || '';
+  els.recommended.value = c.recommended || '';
+  els.delivery.value = c.delivery || '';
+  els.status.value = c.status || 'received';
+  els.errMsg.style.display = 'none';
+  setChecklistValues(c.checklist || []);
+  updateStamp();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function saveCard(){
+  if(!els.customer.value.trim() || !els.vehicle.value.trim() || !els.complaint.value.trim()){
+    els.errMsg.style.display = 'block';
+    els.saveErrMsg.style.display = 'none';
+    return;
+  }
+  els.errMsg.style.display = 'none';
+  els.saveErrMsg.style.display = 'none';
+
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  try{
+    let label = currentLabel;
+    let number;
+    let id = currentId;
+
+    if(!id){
+      if(pendingNumber == null){
+        const nn = await nextJobNumber();
+        pendingNumber = nn.number;
+        pendingLabel = nn.label;
+      }
+      number = pendingNumber;
+      label = pendingLabel;
+      id = label;
+      await dbSet('job-card-counter', String(number));
+    } else {
+      const existing = await dbGet('job-card:' + id);
+      number = existing ? JSON.parse(existing.value).number : Date.now();
+    }
+
+    const card = {
+      id, label, number,
+      date: els.date.value,
+      mechanic: els.mechanic.value.trim(),
+      customer: els.customer.value.trim(),
+      vehicle: els.vehicle.value.trim(),
+      complaint: els.complaint.value.trim(),
+      inspection: els.inspection.value.trim(),
+      recommended: els.recommended.value.trim(),
+      delivery: els.delivery.value,
+      status: els.status.value,
+      checklist: getChecklistValues(),
+    };
+
+    await dbSet('job-card:' + id, JSON.stringify(card));
+
+    currentId = id;
+    currentLabel = label;
+    pendingNumber = null;
+    pendingLabel = null;
+    els.jobNumDisplay.textContent = label;
+    allCards = await loadAllCards();
+    applyFilters();
+    showDetail(card);
+  }catch(e){
+    console.error('Save failed', e);
+    els.saveErrMsg.style.display = 'block';
+  }finally{
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save job card';
+  }
+}
+
+document.getElementById('saveBtn').addEventListener('click', saveCard);
+document.getElementById('newBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('newBtn');
+  btn.disabled = true;
+  await prepareNewCard();
+  btn.disabled = false;
+  showFormPage();
+});
+
+(async function init(){
+  buildChecklist();
+  if(!window.storage){
+    storageMode = localStorageWorks() ? 'local' : 'memory';
+    setBanner(storageMode);
+  }
+  await dbSet('job-card-probe', String(Date.now()));
+  await prepareNewCard();
+  allCards = await loadAllCards();
+  applyFilters();
+})();
+</script>
+</body>
+</html>
